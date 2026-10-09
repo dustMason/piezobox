@@ -1,0 +1,147 @@
+{
+  "host": {
+    "callbacks": 1875,
+    "rate": 32000,
+    "channels": [
+      {
+        "channel": 1,
+        "samples": 954368,
+        "mean": 0.003890991,
+        "rms": 0.004497332,
+        "peak": 0.007781982
+      },
+      {
+        "channel": 2,
+        "samples": 954368,
+        "mean": 0.003839981,
+        "rms": 0.004457127,
+        "peak": 0.007781982
+      },
+      {
+        "channel": 3,
+        "samples": 954368,
+        "mean": 0.003890991,
+        "rms": 0.004497332,
+        "peak": 0.007781982
+      },
+      {
+        "channel": 4,
+        "samples": 954368,
+        "mean": 0.003890991,
+        "rms": 0.004497332,
+        "peak": 0.007781982
+      },
+      {
+        "channel": 5,
+        "samples": 954368,
+        "mean": 0.003890991,
+        "rms": 0.004497332,
+        "peak": 0.007781982
+      },
+      {
+        "channel": 6,
+        "samples": 954368,
+        "mean": 0.003890991,
+        "rms": 0.004497332,
+        "peak": 0.007781982
+      },
+      {
+        "channel": 7,
+        "samples": 954368,
+        "mean": 0.003890991,
+        "rms": 0.004497332,
+        "peak": 0.007781982
+      }
+    ],
+    "pattern_frames": 954368,
+    "sequence_errors": 0,
+    "sample_errors": 0
+  },
+  "device": {
+    "protocol": "PZUA1",
+    "rate": 32000,
+    "channels": 7,
+    "streams": 2,
+    "prototype": 0,
+    "confirmed": 1,
+    "test_pattern": 1,
+    "adc_frames": 1541087,
+    "adc_faults": 0,
+    "late_ticks": 0,
+    "max_tick_us": 11,
+    "max_tick_gap_us": 32,
+    "raw": [
+      23,
+      11,
+      19,
+      11,
+      12,
+      28,
+      18
+    ],
+    "audio": [
+      {
+        "active": 0,
+        "packets": 30044,
+        "frames": 961410,
+        "underflows": 0,
+        "overflows": 0,
+        "startup_packets": 1,
+        "startup_discarded": 154
+      },
+      {
+        "active": 0,
+        "packets": 0,
+        "frames": 0,
+        "underflows": 0,
+        "overflows": 0,
+        "startup_packets": 0,
+        "startup_discarded": 0
+      }
+    ]
+  },
+  "host_exit_code": 0,
+  "restored": {
+    "protocol": "PZUA1",
+    "rate": 32000,
+    "channels": 7,
+    "streams": 2,
+    "prototype": 0,
+    "confirmed": 1,
+    "test_pattern": 0,
+    "adc_frames": 1541526,
+    "adc_faults": 0,
+    "late_ticks": 0,
+    "max_tick_us": 11,
+    "max_tick_gap_us": 32,
+    "raw": [
+      28,
+      17,
+      24,
+      31,
+      26,
+      64,
+      48
+    ],
+    "audio": [
+      {
+        "active": 0,
+        "packets": 30044,
+        "frames": 961410,
+        "underflows": 0,
+        "overflows": 0,
+        "startup_packets": 1,
+        "startup_discarded": 154
+      },
+      {
+        "active": 0,
+        "packets": 0,
+        "frames": 0,
+        "underflows": 0,
+        "overflows": 0,
+        "startup_packets": 0,
+        "startup_discarded": 0
+      }
+    ]
+  }
+}

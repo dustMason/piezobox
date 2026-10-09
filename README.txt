@@ -1,5 +1,8 @@
 PIEZO BOX — TEENSY LC USB-SERIAL WAVEFORM EXPERIMENT
 
+CURRENT FIRMWARE: The box now exposes mono and seven-channel USB Audio inputs.
+See README.md and docs/usb-audio.md. This file describes the older serial builds.
+
 V2 UPDATE — CONTINUOUS SEVEN-INPUT STREAMING
 
 This file describes the original CAP/PZLC1 workflow, which remains supported.

@@ -1,0 +1,43 @@
+{
+  "protocol": "PZUA1",
+  "rate": 32000,
+  "channels": 7,
+  "streams": 2,
+  "prototype": 0,
+  "confirmed": 1,
+  "test_pattern": 0,
+  "adc_frames": 19627025,
+  "adc_faults": 0,
+  "late_ticks": 0,
+  "max_tick_us": 11,
+  "max_tick_gap_us": 32,
+  "raw": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    16,
+    1
+  ],
+  "audio": [
+    {
+      "active": 1,
+      "packets": 146870,
+      "frames": 4699908,
+      "underflows": 0,
+      "overflows": 0,
+      "startup_packets": 1,
+      "startup_discarded": 215
+    },
+    {
+      "active": 0,
+      "packets": 0,
+      "frames": 0,
+      "underflows": 0,
+      "overflows": 0,
+      "startup_packets": 0,
+      "startup_discarded": 0
+    }
+  ]
+}

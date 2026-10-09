@@ -1,92 +1,67 @@
 # Piezo Scope
 
-A native SwiftUI Mac app that receives the existing LC's PZLC1 serial stream,
-shows its waveform, and plays one selected input through AVAudioEngine.
-No Python, firmware change, microphone access, or App Store setup is required.
+A native macOS app for the **Piezo Box LC 7 Inputs** USB audio device. It captures
+all seven channels at 32 kHz using CoreAudio. No Python receiver or Mac audio
+driver installation is needed. macOS may request microphone permission for
+reading the USB audio input.
 
-## Build and launch
+## Use
 
-Requires macOS 14 or later and Xcode with Swift 6 or newer to build. The script
-builds for the host architecture and applies a local ad-hoc signature.
+1. Connect the Teensy running the current `piezo_lc_audio` firmware.
+2. Open `build/Piezo Scope.app` and press Start.
+3. Select a row to inspect its waveform. Listen plays that selected input on
+   the Mac's sound output. Listening volume/boost are local monitoring controls.
+4. For recording, select **Piezo Box LC Mono** or **Piezo Box LC 7 Inputs** in
+   the recording app. Both hardware inputs remain available when Piezo Scope is
+   stopped or closed.
 
-```sh
-cd ~/code/piezo-box
-./macOS/build-app.sh
-open "build/Piezo Scope.app"
-```
+The waveform and trigger thresholds use equivalent ADC-count units after the
+firmware's DC filter. The audio stream has already been centered; the app does
+not apply a second DC filter. Input names and settings persist across launches.
+The default drum names are assignments you can edit, not a verified jack map.
 
-The current bundle was built for Apple Silicon. Open `macOS/Package.swift` in
-Xcode to work on the source there instead. Build products are ignored by Git.
+## MIDI mode
 
-## Try it
+Select MIDI, enable the pads you want, and choose **Piezo Box Drums** as a MIDI
+input in your instrument or DAW. Defaults use channel 10 and common drum notes.
+Each row has a threshold and note number; the selected input also exposes its
+retrigger delay and, for hit-strength velocity, the level that maps to velocity
+127. A three-millisecond peak search measures strength, and hysteresis plus
+retrigger holdoff suppress repeated notes from ringing. Tune thresholds above
+the idle hum and adjust using real strikes. Fixed velocity is selectable and
+adjustable from 1 to 127. Test sends a MIDI note without a physical strike.
 
-1. Connect the Teensy running the capture sketch. Close Python recording or
-   Arduino Serial Monitor so the app can exclusively own its serial port.
-2. Choose the device and input. A7 / pin 21 is the mapped starting input.
-3. Press **Start**. The waveform and level meter show received ADC data with DC
-   removed. The app initially listens at 20% volume with +12 dB boost.
-4. **Listen** mutes playback without stopping the incoming waveform.
-5. **Hold** freezes the view while reception and listening continue.
-6. Stop before changing input or sample rate. The physical box's knob controls
-   analog loading; the app's Boost and Volume controls only affect playback.
+Notes receive an 80 ms note-off. Stop, mode changes, errors, and shutdown release
+active notes. MIDI mode still uses the same standard USB audio input; it does
+not change the firmware or prevent another app from recording the box.
 
-Time Window and View Scale only change the display. Auto scale can magnify
-small signals; the vertical axis states the displayed full-scale range.
-The meter shows the input before listening boost/volume. A clipping message
-reports that clipping occurred during the current capture; lowering boost does
-not erase that historical count. Start a new capture to reset the counters.
+## Implementation
 
-Playback follows the Mac's default sound output. The app detects output-engine
-configuration changes and rebuilds playback if needed. If output is unavailable,
-the waveform continues; select a working output in macOS and toggle Listen.
+`CoreAudioInput.swift` opens only the named seven-input Piezo USB device.
+`PiezoAudioBridge/Capture.c` copies input PCM into a bounded single-producer,
+single-consumer ring without Swift allocation or UI work in the audio callback.
+A worker drains that ring, runs triggering, and publishes waveform snapshots.
+It requests a 128-frame device buffer for drum latency when supported. The
+footer counts observed CoreAudio/app buffering gaps; it is not a USB CRC monitor.
+Firmware diagnostics and the dedicated digital-pattern tests provide separate
+USB transport evidence.
 
-The device's finite capture command allows up to ten minutes. The app starts
-another capture when that completes; the boundary can introduce a short gap.
-This is a live viewer/listener, not a gapless recorder or a DAW input device.
-Use the existing Python recorder for WAV files. Core Audio virtual-device or
-audio-plugin integration remains future work.
+`AudioMonitor` uses AVAudioEngine for local playback. `MIDIOutput` exposes a
+CoreMIDI virtual source with a stable unique ID. `PiezoCore` contains deterministic
+triggering, waveform history, and the retained serial-protocol decoder tests.
 
-## Implementation boundaries
-
-- `PiezoCore`: incremental framed-protocol decoder, DC blocker, and bounded
-  waveform history with transient-preserving min/max downsampling.
-- `SerialTransport`: IOKit device discovery, exclusive POSIX serial access,
-  firmware handshake, capture lifecycle, cancellation, and disconnect handling.
-- `CaptureSession`: raw-input processing, gap accounting, waveform snapshots,
-  and delivery to the playback sink.
-- `AudioMonitor`: mono AVAudioEngine/AVAudioPlayerNode playback. It groups small
-  packets into buffers, keeps the queue bounded, and reports render/clipping data.
-- `ScopeModel` / `ContentView`: native controls and a data-driven SwiftUI Canvas.
-
-The transport and audio sink are separate so future audio routing does not need
-to be coupled to the view or the serial parser. This implementation does not
-install a Core Audio driver or expose a virtual microphone to other apps.
-
-## Checks and limits
+## Build and test
 
 ```sh
 swift test --package-path macOS
+./macOS/build-app.sh
 ```
 
-Nine core tests pass: byte-by-byte fragmented streams, channel ordering, gap
-counters, malformed packets/headers, duplicate sequences, truncated packets,
-DC behavior, bounded history, and preservation of short waveform transients.
-The release app builds and its local code signature verifies successfully.
+The locally signed app bundle is written to `build/Piezo Scope.app`. It contains
+no audio-driver installer. This is a personal development build, not an App Store
+submission. App Review is outside the requested scope.
 
-On 2026-10-09 the running app discovered the physical LC, received live samples,
-rendered a waveform, and scheduled/rendered audio through AVAudioEngine. The
-live verification snapshot is in `validation/2026-10-09-native-live-check.json`
-at the repository root. It records zero transport gaps at that point, plus
-playback rebuffer and clipping counters; it does not claim uninterrupted or
-undistorted physical sound. End-of-session timing counters are not available
-until the LC sends its final statistics.
-
-Analog input protection, waveform fidelity, the remaining jack mapping, actual
-speaker/headphone audibility, output-route changes, unplug recovery, and the
-ten-minute restart boundary have not all been physically exercised. The app
-does not change the input circuit or restore clipped negative waveforms.
-
-For local debugging, launching with `--diagnostics /absolute/path/report.json`
-writes a small live status report about twice per second. This is off by default
-and contains counters/settings, not the waveform. The serial device is never
-opened merely for discovery, and only a selected Teensy is opened for capture.
+`macOS/tools/check-midi.swift` is a separate CoreMIDI receiver for integration
+checks. The root `tools/usb_audio_probe.c`, `tools/list_audio.swift`, and
+`tools/native_capture_probe.c` inspect the hardware/audio path without changing
+the system's default input or output device.

@@ -11,7 +11,7 @@ struct AudioStatus {
     var error: String?
 }
 
-/// AVAudioEngine is a playback sink. It does not own the serial transport.
+/// AVAudioEngine is a playback sink. It does not own the USB audio input.
 final class AudioMonitor {
     private let queue = DispatchQueue(label: "com.dustmason.piezo.audio", qos: .userInteractive)
     private var engine: AVAudioEngine?
@@ -58,7 +58,7 @@ final class AudioMonitor {
     }
 
     func append(_ samples: [Float]) {
-        queue.async {
+        queue.async { [self] in
             guard self.enabled, self.capturing, let player = self.player, let format = self.format else { return }
             self.pending.append(contentsOf: samples)
             let block = 256

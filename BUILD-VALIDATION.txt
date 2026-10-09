@@ -87,3 +87,39 @@ The root HEX and its initial-build checksum above are intentionally unchanged.
 
 See validation/2026-10-09-v2-throughput.txt for measured rate limits and test
 durations, and adjacent JSON reports for counters and build provenance.
+
+CLASS-COMPLIANT USB AUDIO FOLLOW-UP — 2026-10-09
+
+Current source: piezo_lc_audio/piezo_lc_audio.ino and usb_audio/ core additions.
+The isolated build uses Teensy 1.62.0 / LC / 48 MHz / -O3 --specs=nano.specs.
+Release program: 15,456 / 63,488 bytes flash.
+Global/static data: 5,532 / 8,192 bytes RAM; 2,660 bytes remain for stack/locals.
+Current binary: firmware/piezo-lc-usb-audio.hex.
+Source and binary hashes: validation/2026-10-09-usb-audio-build.json.
+
+The LC now exposes USB Audio Class 1 mono and seven-channel inputs, both 32 kHz
+and 16-bit signed PCM sourced from ADC12. It also retains CDC serial diagnostics
+and software reboot. macOS enumerates them as Piezo Box LC Mono and
+Piezo Box LC 7 Inputs through its built-in AppleUSBAudio driver.
+No Mac HAL driver was installed and no system audio service restart was needed.
+
+Real PCM from the piezos was recorded through both inputs. Digital-pattern
+checks qualify channel ordering and continuity separately from analog signal
+quality. A simultaneous 120-second mono + seven-channel run checked 3,834,368
+frames per input, with no sequence/sample errors, ADC faults, late ticks, or
+streaming underruns/overruns. A further 30-second check of the permanent build
+checked 954,368 seven-channel frames with the same clean result. Expected startup
+silence/discards are reported separately. Diagnostic patterns were turned off.
+
+The release has no prototype reboot timer. Multiple USB-only updates succeeded
+without reaching the enclosed Program button. The original and v2 serial HEX
+files remain unchanged as rollback snapshots.
+
+Python tests: 22 PASS (legacy codecs, packed streaming, USB descriptors).
+Swift tests: 16 PASS (codecs, signal history, drum-trigger behavior).
+The new native CoreAudio input callback also captured 320,000 real frames in a
+10-second standalone test, with a 128-frame device quantum and no reported
+callback or application-buffer gaps. The GUI app subsequently received microphone permission and captured over
+6.58 million real frames with zero reported capture gaps. A separate CoreMIDI
+client received 68 note-ons and 68 note-offs on channel 10, with velocities
+from 1 through 127. See validation/2026-10-09-coreaudio-midi-app.json.

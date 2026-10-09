@@ -18,7 +18,7 @@ struct PiezoScopeApp: App {
             ContentView(model: model)
                 .onAppear { delegate.model = model }
         }
-        .defaultSize(width: 980, height: 660)
+        .defaultSize(width: 1100, height: 870)
         .windowResizability(.contentMinSize)
         .commands {
             CommandMenu("Capture") {

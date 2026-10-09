@@ -1,0 +1,50 @@
+{
+  "source": "Piezo Box Drums",
+  "input_transport": "Teensy USB Audio / CoreAudio",
+  "receiver": "Separate CoreMIDI client",
+  "note_ons": 68,
+  "note_offs": 68,
+  "channel_numbers": [
+    10
+  ],
+  "notes": [
+    45,
+    46,
+    48,
+    49
+  ],
+  "velocities": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    15,
+    20,
+    21,
+    22,
+    27,
+    36,
+    39,
+    47,
+    49,
+    72,
+    76,
+    119,
+    127
+  ],
+  "app_observation": {
+    "received_frames": 6583552,
+    "missing_frames": 0,
+    "selected_input": 4,
+    "listen": true,
+    "mode_restored": "Audio"
+  },
+  "scope": "Actual MIDI messages observed from the running GUI app; physical piezo/jack assignments and trigger calibration remain unverified."
+}

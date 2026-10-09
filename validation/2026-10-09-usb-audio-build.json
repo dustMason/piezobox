@@ -1,0 +1,27 @@
+{
+  "board": "Teensy LC",
+  "cpu_hz": 48000000,
+  "rate": 32000,
+  "channels": [
+    7,
+    1
+  ],
+  "format": "signed little-endian PCM16 from ADC12",
+  "dc_filter_hz": 20,
+  "usb_class": "UAC1 + CDC",
+  "prototype": false,
+  "flash_bytes": 15456,
+  "static_ram_bytes": 5532,
+  "ram_remaining_for_stack_bytes": 2660,
+  "teensy_boards_version": "1.62.0",
+  "compiler": "15.2.1",
+  "optimization": "-O3 --specs=nano.specs",
+  "files": {
+    "firmware/piezo-lc-usb-audio.hex": "2f7948c90fcf74ef5e64d2074034f31368d52f02b66be365de6943c95ccc63d8",
+    "piezo_lc_audio/piezo_lc_audio.ino": "3c22fe2af79a97776a785c276b33935b20a8a42f388bdec2d61e72cb72cd9878",
+    "tools/build_usb_audio.py": "610a06cf0d2ff553008e491df0ddebbfccb280a7fbcede8754c6623487d2c660",
+    "usb_audio/piezo_usb_audio.h": "f10d99284a5ca2815cedf99e51ea08a09e6424effb131a49e8516d7c2e1e0c10",
+    "usb_audio/usb_hooks.inc": "ecbcaa77f7a6b24ae0de08fd9323cb81e17f1f5d70dc4ac8e6c3c6f172100ac5",
+    "usb_audio/control_requests.inc": "91bde38e524ab23a2ce712fc293636e09f1ac15c04152c9f220bca209c56b9dc"
+  }
+}

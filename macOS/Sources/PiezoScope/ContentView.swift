@@ -11,200 +11,223 @@ enum ScopeColors {
 
 struct ContentView: View {
     @ObservedObject var model: ScopeModel
-
     var body: some View {
         VStack(spacing: 0) {
             connectionBar
             Divider()
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text("Input waveform").font(.headline)
-                    Text("A\(model.selectedPin - 14) · pin \(model.selectedPin)")
-                        .font(.subheadline.monospacedDigit()).foregroundStyle(.secondary)
-                    Spacer()
-                    if model.hold {
-                        Label("View held", systemImage: "pause.fill").font(.caption).foregroundStyle(.secondary)
-                    } else if !model.isActive && !model.waveform.isEmpty {
-                        Text("Last capture").font(.caption).foregroundStyle(.secondary)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    routing
+                    inputTable
+                    selectedControls
+                    waveform
+                    listening
+                    if let error = visibleError {
+                        Label(error, systemImage: "exclamationmark.triangle")
+                            .font(.callout).foregroundStyle(.red).textSelection(.enabled)
                     }
-                }
-
-                WaveformView(bins: model.waveform, range: model.waveformRange, windowMS: model.displayedWindowMS)
-                    .overlay {
-                        if model.waveform.isEmpty {
-                            VStack(spacing: 8) {
-                                Image(systemName: "waveform").font(.system(size: 30, weight: .light)).foregroundStyle(.secondary)
-                                Text(model.devices.isEmpty ? "Connect your Teensy" : "Ready for your piezo")
-                                    .font(.title3.weight(.medium))
-                                Text(model.phase == .connecting ? model.message : "Select an input and press Start to see its waveform.")
-                                    .font(.callout).foregroundStyle(.secondary)
-                            }
-                            .padding(20)
-                            .background(.background.opacity(0.94), in: RoundedRectangle(cornerRadius: 8))
-                        }
-                    }
-                    .frame(minHeight: 220, maxHeight: .infinity)
-
-                HStack(spacing: 18) {
-                    Text("Window").font(.caption).foregroundStyle(.secondary)
-                    Picker("Time window", selection: $model.timeWindow) {
-                        Text("50 ms").tag(0.05)
-                        Text("200 ms").tag(0.2)
-                        Text("1 s").tag(1.0)
-                    }
-                    .pickerStyle(.segmented).labelsHidden().frame(width: 210)
-                    Spacer(minLength: 12)
-                    Picker("View scale", selection: $model.viewScale) {
-                        Text("Auto").tag(0.0)
-                        Text("1×").tag(1.0)
-                        Text("4×").tag(0.25)
-                        Text("16×").tag(0.0625)
-                    }
-                    .frame(width: 145)
-                    .help("Changes the waveform’s visual scale only. It does not change the sound.")
-                    Toggle(isOn: $model.hold) { Label("Hold", systemImage: "pause") }
-                        .toggleStyle(.button).disabled(model.waveform.isEmpty)
-                        .help("Hold the waveform for inspection while capture and listening continue.")
-                }
-
-                HStack(spacing: 14) {
-                    Text("Input level").font(.callout)
-                    LevelMeter(db: model.rmsDB, peakDB: model.peakDB)
-                        .frame(height: 8)
-                        .accessibilityLabel("Input RMS level")
-                        .accessibilityValue("\(model.rmsDB, specifier: "%.1f") decibels full scale")
-                    Text(String(format: "Peak %.1f dBFS", model.peakDB))
-                        .font(.system(.caption, design: .monospaced)).foregroundStyle(.secondary)
-                        .frame(width: 138, alignment: .trailing)
-                }
-            }
-            .padding(24)
-
-            Divider()
-            listeningBar
-            if let error = model.error ?? model.audioStatus.error {
-                Label(error, systemImage: "exclamationmark.triangle")
-                    .font(.callout).foregroundStyle(.red).textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 24).padding(.bottom, 14)
-            } else if model.audioStatus.clippedSamples > 0 || model.snapshot.fullScaleSamples > 0 {
-                Label(model.snapshot.fullScaleSamples > 0
-                      ? "The input reached the ADC ceiling. Check the physical input level."
-                      : "Listening boost clipped the output. Reduce Boost for a cleaner signal.",
-                      systemImage: "exclamationmark.triangle")
-                    .font(.caption).foregroundStyle(.orange)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 24).padding(.bottom, 12)
+                }.padding(20)
             }
             Divider()
-            statusBar
+            HStack(spacing: 10) {
+                Circle().fill(model.phase == .live ? ScopeColors.signal : .secondary).frame(width: 6, height: 6)
+                Text(model.statusText).fontWeight(.medium)
+                Text(model.message).foregroundStyle(.secondary)
+                Spacer()
+                Text("\(model.snapshot.received.formatted()) frames").monospacedDigit()
+                Text("\(model.snapshot.missing) missing frames")
+                    .foregroundStyle(model.snapshot.missing > 0 ? Color.orange : .secondary).monospacedDigit()
+                if model.snapshot.timingIssues > 0 { Label("Input discontinuity", systemImage: "exclamationmark.triangle").foregroundStyle(.orange) }
+            }.font(.caption).padding(.horizontal, 20).padding(.vertical, 10)
         }
-        .frame(minWidth: 760, minHeight: 560)
+        .frame(minWidth: 980, minHeight: 760)
         .background(Color(nsColor: .windowBackgroundColor))
     }
-
+    private var visibleError: String? {
+        model.error ?? model.midiStatus.error ?? model.audioStatus.error
+    }
     private var connectionBar: some View {
-        HStack(alignment: .bottom, spacing: 18) {
-            VStack(alignment: .leading, spacing: 5) {
-                Text("Device").font(.caption).foregroundStyle(.secondary)
-                HStack(spacing: 6) {
-                    Picker("Device", selection: $model.selectedPort) {
-                        if model.devices.isEmpty { Text("No Teensy connected").tag("") }
-                        ForEach(model.devices) { device in Text(device.title).tag(device.path) }
-                    }
-                    .labelsHidden().frame(minWidth: 180, maxWidth: .infinity)
-                    .disabled(model.isActive || model.devices.isEmpty)
-                    Button { model.refreshDevices() } label: { Image(systemName: "arrow.clockwise") }
-                        .help("Refresh connected Teensy devices").accessibilityLabel("Refresh devices")
-                        .disabled(model.isActive)
-                }
-            }
-            VStack(alignment: .leading, spacing: 5) {
-                Text("Input").font(.caption).foregroundStyle(.secondary)
-                Picker("Input", selection: $model.selectedPin) {
-                    ForEach(14...26, id: \.self) { pin in
-                        Text("A\(pin - 14) · pin \(pin)\(pin == 21 ? " · mapped" : "")").tag(pin)
-                    }
-                }
-                .labelsHidden().frame(width: 155).disabled(model.isActive)
-                .help("A7 is the mapped input. Other jack assignments still need checking. Stop capture before changing inputs.")
-            }
-            VStack(alignment: .leading, spacing: 5) {
-                Text("Sample rate").font(.caption).foregroundStyle(.secondary)
-                Picker("Sample rate", selection: $model.sampleRate) {
-                    Text("16 kHz").tag(16_000)
-                    Text("8 kHz").tag(8_000)
-                }
-                .labelsHidden().frame(width: 90).disabled(model.isActive)
-            }
+        HStack(spacing: 16) {
+            Picker("Device", selection: $model.selectedDeviceUID) {
+                if model.devices.isEmpty { Text("No Teensy connected").tag("") }
+                ForEach(model.devices) { Text($0.title).tag($0.uid) }
+            }.frame(maxWidth: 360).disabled(model.isActive)
+            Button { model.refreshDevices() } label: { Image(systemName: "arrow.clockwise") }
+                .help("Refresh audio inputs").accessibilityLabel("Refresh audio inputs").disabled(model.isActive)
+            Text("7 inputs · 32 kHz").font(.callout.monospacedDigit()).foregroundStyle(.secondary)
+            Spacer()
             Button(action: model.toggleCapture) {
-                Label(model.isActive ? "Stop" : "Start", systemImage: model.isActive ? "stop.fill" : "play.fill")
-                    .frame(width: 76)
-            }
-            .buttonStyle(.borderedProminent).controlSize(.large)
-            .disabled((!model.isActive && !model.canStart) || model.phase == .stopping)
-            .keyboardShortcut(.return, modifiers: [])
-            .help("Start or stop receiving this input. Return is the keyboard shortcut.")
-        }
-        .padding(.horizontal, 24).padding(.vertical, 18)
+                Label(model.isActive ? "Stop" : "Start", systemImage: model.isActive ? "stop.fill" : "play.fill").frame(width: 80)
+            }.buttonStyle(.borderedProminent).controlSize(.large)
+                .disabled((!model.isActive && !model.canStart) || model.phase == .stopping)
+                .keyboardShortcut("r", modifiers: .command)
+        }.padding(.horizontal, 20).padding(.vertical, 14)
     }
-
-    private var listeningBar: some View {
-        HStack(spacing: 24) {
-            VStack(alignment: .leading, spacing: 5) {
-                Toggle("Listen", isOn: $model.listenEnabled).toggleStyle(.switch)
-                    .help("Play through the Mac’s current sound output. The waveform keeps updating when listening is off.")
-                Text("System sound output").font(.caption).foregroundStyle(.secondary)
+    private var routing: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Picker("Output mode", selection: $model.config.mode) {
+                    ForEach(OutputMode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                }.pickerStyle(.segmented).frame(width: 200)
+                Spacer()
+                if model.config.mode == .audio {
+                    Label(model.devices.isEmpty ? "Connect the USB box" : "USB audio available", systemImage: "cable.connector")
+                        .font(.callout).foregroundStyle(.secondary)
+                } else {
+                    Text("\(model.midiStatus.sent) MIDI hits sent").font(.callout.monospacedDigit()).foregroundStyle(.secondary)
+                }
             }
-            Divider().frame(height: 40)
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text("Volume")
+            if model.config.mode == .audio {
+                HStack(alignment: .top, spacing: 30) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Piezo Box LC Mono").fontWeight(.medium)
+                        Text("All seven inputs averaged into one channel.").font(.caption).foregroundStyle(.secondary)
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Piezo Box LC 7 Inputs").fontWeight(.medium)
+                        Text("Each input on its own recording channel.").font(.caption).foregroundStyle(.secondary)
+                    }
                     Spacer()
-                    Text("\(Int(model.volume * 100))%").monospacedDigit().foregroundStyle(.secondary)
-                }.font(.callout)
-                Slider(value: $model.volume, in: 0...1) { Text("Listening volume") }
-                    .labelsHidden().disabled(!model.listenEnabled)
-            }
-            .frame(maxWidth: .infinity)
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text("Boost")
+                }
+                Text("Choose either USB input in your music app. Both work even when Piezo Scope is closed.")
+                    .font(.caption).foregroundStyle(.secondary)
+            } else {
+                HStack(spacing: 18) {
+                    Stepper("Channel \(model.config.midiChannel)", value: $model.config.midiChannel, in: 1...16).frame(width: 140)
+                    Picker("Velocity", selection: $model.config.dynamicVelocity) {
+                        Text("Hit strength").tag(true); Text("Fixed").tag(false)
+                    }.pickerStyle(.segmented).frame(width: 210)
+                    if !model.config.dynamicVelocity {
+                        Stepper("\(model.config.fixedVelocity)", value: $model.config.fixedVelocity, in: 1...127).frame(width: 90).accessibilityLabel("Fixed MIDI velocity")
+                    }
                     Spacer()
-                    Text("+\(Int(model.boostDB)) dB").monospacedDigit().foregroundStyle(.secondary)
-                }.font(.callout)
-                Slider(value: $model.boostDB, in: 0...36, step: 1) { Text("Listening boost") }
-                    .labelsHidden().disabled(!model.listenEnabled)
-                    .help("Amplifies quiet audio for listening. It does not change the ADC or the input waveform display.")
+                    Text("Piezo Box Drums").fontWeight(.medium)
+                }
+                Text("Select “Piezo Box Drums” as a MIDI input in your music app. \(model.midiStatus.lastMessage).")
+                    .font(.caption).foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity)
         }
-        .padding(.horizontal, 24).padding(.vertical, 18)
     }
-
-    private var statusBar: some View {
-        HStack(spacing: 9) {
-            Circle().fill(model.phase == .live ? ScopeColors.signal : Color.secondary.opacity(0.6)).frame(width: 6, height: 6)
-                .accessibilityHidden(true)
-            Text(model.statusText).fontWeight(.medium)
-            Text(model.message).foregroundStyle(.secondary).lineLimit(1)
-            Spacer(minLength: 12)
-            if model.snapshot.received > 0 {
-                Text("\(model.snapshot.received.formatted()) samples").monospacedDigit()
-                Text("·").foregroundStyle(.tertiary)
-                Text("\(model.snapshot.missing) dropped")
-                    .foregroundStyle(model.snapshot.missing > 0 ? Color.orange : Color.secondary)
-                    .monospacedDigit()
+    private var inputTable: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                Text(model.config.mode == .midi ? "On" : "").frame(width: 26)
+                Text("Input").frame(width: 92, alignment: .leading)
+                Text("Name").frame(width: 120, alignment: .leading)
+                Text("Signal").frame(maxWidth: .infinity, alignment: .leading)
+                if model.config.mode == .midi {
+                    Text("Trigger threshold · counts").frame(width: 220, alignment: .leading)
+                    Text("MIDI note").frame(width: 85)
+                    Text("Hits").frame(width: 55, alignment: .trailing)
+                    Color.clear.frame(width: 42, height: 1)
+                } else { Text("Peak · counts").frame(width: 100, alignment: .trailing) }
+            }.font(.caption).foregroundStyle(.secondary).padding(.horizontal, 10).padding(.vertical, 8)
+            Divider()
+            ForEach(0..<7, id: \.self) { index in
+                InputRow(model: model, index: index)
+                if index < 6 { Divider() }
             }
-            if model.snapshot.timingIssues > 0 {
-                Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-                    .help("The last capture reported timing overruns. Try 8 kHz.")
+        }.background(Color(nsColor: .textBackgroundColor))
+            .overlay(Rectangle().stroke(Color.primary.opacity(0.1), lineWidth: 1))
+    }
+    private var selectedControls: some View {
+        HStack(spacing: 20) {
+            Text("Input \(model.config.selectedChannel + 1) · \(model.config.pads[model.config.selectedChannel].name)").font(.headline)
+            Spacer()
+            if model.config.mode == .midi {
+                Stepper("Retrigger \(Int(model.config.pads[model.config.selectedChannel].retriggerMS)) ms",
+                        value: $model.config.pads[model.config.selectedChannel].retriggerMS, in: 5...500, step: 5).frame(width: 170)
+                if model.config.dynamicVelocity {
+                    HStack {
+                        Text("Velocity 127 at")
+                        TextField("Full velocity level", value: $model.config.pads[model.config.selectedChannel].velocityCeiling, format: .number.precision(.fractionLength(0)))
+                            .textFieldStyle(.roundedBorder).frame(width: 66)
+                        Text("counts").foregroundStyle(.secondary)
+                    }.font(.callout)
+                }
             }
         }
-        .font(.caption).padding(.horizontal, 24).padding(.vertical, 11)
+    }
+    private var waveform: some View {
+        VStack(spacing: 10) {
+            WaveformView(bins: model.waveform, range: model.waveformRange, windowMS: model.displayedWindowMS,
+                         threshold: model.config.mode == .midi ? Float(model.config.pads[model.config.selectedChannel].threshold / 4096) : nil)
+                .frame(height: 165)
+                .overlay {
+                    if model.waveform.isEmpty {
+                        Text(model.isActive ? "Waiting for samples…" : "Press Start to see all seven inputs.")
+                            .font(.callout).foregroundStyle(.secondary)
+                    }
+                }
+            HStack(spacing: 16) {
+                Text("Window").font(.caption).foregroundStyle(.secondary)
+                Picker("Time window", selection: $model.config.windowSeconds) {
+                    Text("50 ms").tag(0.05); Text("200 ms").tag(0.2); Text("1 s").tag(1.0)
+                }.pickerStyle(.segmented).labelsHidden().frame(width: 205)
+                Text("\(Int(model.selectedSignal.peak * 4096)) counts peak").font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                Spacer()
+                Picker("View scale", selection: $model.viewScale) {
+                    Text("Auto").tag(0.0); Text("1×").tag(1.0); Text("4×").tag(0.25); Text("16×").tag(0.0625)
+                }.frame(width: 145)
+                Toggle("Hold", isOn: $model.hold).toggleStyle(.button).disabled(model.waveform.isEmpty)
+            }
+        }
+    }
+    private var listening: some View {
+        HStack(spacing: 20) {
+            Toggle("Listen to selected input", isOn: $model.listenEnabled).toggleStyle(.switch)
+            Text("Volume").font(.caption)
+            Slider(value: $model.volume, in: 0...1).frame(width: 130).disabled(!model.listenEnabled).accessibilityLabel("Listening volume")
+            Text("\(Int(model.volume * 100))%").font(.caption.monospacedDigit()).frame(width: 36)
+            Text("Listen boost").font(.caption)
+            Slider(value: $model.boostDB, in: 0...36, step: 1).frame(width: 130).disabled(!model.listenEnabled).accessibilityLabel("Listening boost")
+            Text("+\(Int(model.boostDB)) dB").font(.caption.monospacedDigit()).frame(width: 52)
+            Spacer()
+        }.padding(.top, 4)
+            .help("Local listening uses the selected row. These controls do not change MIDI thresholds or the USB audio inputs.")
     }
 }
 
+private struct InputRow: View {
+    @ObservedObject var model: ScopeModel
+    let index: Int
+    var body: some View {
+        let signal = model.snapshot.channels[index]
+        HStack(spacing: 12) {
+            if model.config.mode == .midi {
+                Toggle("Input \(index + 1) MIDI enabled", isOn: $model.config.pads[index].enabled).labelsHidden().frame(width: 26)
+            } else { Color.clear.frame(width: 26, height: 1) }
+            Button { model.config.selectedChannel = index } label: {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Input \(index + 1)").fontWeight(model.config.selectedChannel == index ? .semibold : .regular)
+                    Text("A\(index + 1) · pin \(index + 15)").font(.caption2).foregroundStyle(.secondary)
+                }.frame(width: 92, alignment: .leading).contentShape(Rectangle())
+            }.buttonStyle(.plain).accessibilityLabel("View input \(index + 1)")
+            TextField("Input \(index + 1) name", text: $model.config.pads[index].name).textFieldStyle(.plain).frame(width: 120)
+            LevelMeter(db: 20 * log10(max(0.000001, Double(signal.rms))), peakDB: 20 * log10(max(0.000001, Double(signal.peak))))
+                .frame(minWidth: 100, maxWidth: .infinity).frame(height: 8)
+                .accessibilityLabel("Input \(index + 1) level").accessibilityValue("\(Int(signal.peak * 4096)) ADC counts peak")
+            if model.config.mode == .midi {
+                HStack(spacing: 8) {
+                    Slider(value: Binding(get: { log2(max(1, model.config.pads[index].threshold)) }, set: { model.config.pads[index].threshold = pow(2, $0) }), in: 0...log2(4095))
+                        .accessibilityLabel("Input \(index + 1) trigger threshold")
+                    TextField("Threshold", value: Binding(get: { Int(model.config.pads[index].threshold) }, set: { model.config.pads[index].threshold = Double(min(4095, max(1, $0))) }), format: .number)
+                        .textFieldStyle(.roundedBorder).frame(width: 55).accessibilityLabel("Input \(index + 1) threshold counts")
+                }.frame(width: 220)
+                Stepper(value: $model.config.pads[index].note, in: 0...127) {
+                    Text("\(model.config.pads[index].note)").monospacedDigit()
+                }.frame(width: 85).accessibilityLabel("Input \(index + 1) MIDI note")
+                Text("\(signal.hits)").font(.callout.monospacedDigit()).frame(width: 55, alignment: .trailing)
+                    .foregroundStyle(ProcessInfo.processInfo.systemUptime - signal.lastHitTime < 0.15 ? ScopeColors.signal : .secondary)
+                Button("Test") { model.testMIDI(index) }.frame(width: 42).disabled(!model.midiStatus.available)
+                    .accessibilityLabel("Send MIDI test for input \(index + 1)")
+            } else {
+                Text("\(Int(signal.peak * 4096))").font(.callout.monospacedDigit()).frame(width: 100, alignment: .trailing)
+            }
+        }.padding(.horizontal, 10).frame(height: 39)
+            .background(model.config.selectedChannel == index ? ScopeColors.signal.opacity(0.08) : .clear)
+    }
+}
 private struct LevelMeter: View {
     let db: Double
     let peakDB: Double
@@ -226,6 +249,7 @@ private struct WaveformView: View {
     let bins: [WaveBin]
     let range: Float
     let windowMS: Double
+    var threshold: Float? = nil
 
     var body: some View {
         Canvas { context, size in
@@ -245,11 +269,18 @@ private struct WaveformView: View {
             func label(_ text: String, x: Double, y: Double, anchor: UnitPoint) {
                 context.draw(Text(text).font(font).foregroundColor(.secondary), at: CGPoint(x: x, y: y), anchor: anchor)
             }
-            label(String(format: "+%.3f", range), x: area.minX - 7, y: area.minY, anchor: .trailing)
+            label(String(format: "+%.0f", range * 4096), x: area.minX - 7, y: area.minY, anchor: .trailing)
             label("0", x: area.minX - 7, y: area.midY, anchor: .trailing)
-            label(String(format: "−%.3f", range), x: area.minX - 7, y: area.maxY, anchor: .trailing)
+            label(String(format: "−%.0f", range * 4096), x: area.minX - 7, y: area.maxY, anchor: .trailing)
             label(String(format: "−%.0f ms", windowMS), x: area.minX, y: size.height - 9, anchor: .leading)
             label("now", x: area.maxX, y: size.height - 9, anchor: .trailing)
+            if let threshold, threshold <= range {
+                for sign: Float in [-1, 1] {
+                    let y = area.midY - area.height * 0.5 * Double(sign * threshold / range)
+                    var line = Path(); line.move(to: CGPoint(x: area.minX, y: y)); line.addLine(to: CGPoint(x: area.maxX, y: y))
+                    context.stroke(line, with: .color(.orange), style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
+                }
+            }
             guard !bins.isEmpty else { return }
             context.clip(to: Path(area))
             func point(_ index: Int, _ value: Float) -> CGPoint {

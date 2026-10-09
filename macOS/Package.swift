@@ -7,7 +7,8 @@ let package = Package(
     products: [.executable(name: "PiezoScope", targets: ["PiezoScope"])],
     targets: [
         .target(name: "PiezoCore"),
-        .executableTarget(name: "PiezoScope", dependencies: ["PiezoCore"]),
+        .target(name: "PiezoAudioBridge", publicHeadersPath: "include"),
+        .executableTarget(name: "PiezoScope", dependencies: ["PiezoCore", "PiezoAudioBridge"]),
         .testTarget(name: "PiezoCoreTests", dependencies: ["PiezoCore"]),
     ],
     swiftLanguageModes: [.v5]

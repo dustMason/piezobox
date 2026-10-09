@@ -1,0 +1,170 @@
+{
+  "captures": [
+    {
+      "exit": 0,
+      "host": {
+        "callbacks": 7500,
+        "rate": 32000,
+        "channels": [
+          {
+            "channel": 1,
+            "samples": 3834368,
+            "mean": 0.003890991,
+            "rms": 0.004497332,
+            "peak": 0.007781982
+          },
+          {
+            "channel": 2,
+            "samples": 3834368,
+            "mean": 0.003907051,
+            "rms": 0.004510868,
+            "peak": 0.007781982
+          },
+          {
+            "channel": 3,
+            "samples": 3834368,
+            "mean": 0.003890991,
+            "rms": 0.004497332,
+            "peak": 0.007781982
+          },
+          {
+            "channel": 4,
+            "samples": 3834368,
+            "mean": 0.003890991,
+            "rms": 0.004497332,
+            "peak": 0.007781982
+          },
+          {
+            "channel": 5,
+            "samples": 3834368,
+            "mean": 0.003890991,
+            "rms": 0.004497332,
+            "peak": 0.007781982
+          },
+          {
+            "channel": 6,
+            "samples": 3834368,
+            "mean": 0.003890991,
+            "rms": 0.004497332,
+            "peak": 0.007781982
+          },
+          {
+            "channel": 7,
+            "samples": 3834368,
+            "mean": 0.003890991,
+            "rms": 0.004497332,
+            "peak": 0.007781982
+          }
+        ],
+        "pattern_frames": 3834368,
+        "sequence_errors": 0,
+        "sample_errors": 0
+      }
+    },
+    {
+      "exit": 0,
+      "host": {
+        "callbacks": 7500,
+        "rate": 32000,
+        "channels": [
+          {
+            "channel": 1,
+            "samples": 3834368,
+            "mean": 0.003890991,
+            "rms": 0.004497332,
+            "peak": 0.007781982
+          }
+        ],
+        "pattern_frames": 3834368,
+        "sequence_errors": 0,
+        "sample_errors": 0
+      }
+    }
+  ],
+  "device": {
+    "protocol": "PZUA1",
+    "rate": 32000,
+    "channels": 7,
+    "streams": 2,
+    "prototype": 1,
+    "confirmed": 1,
+    "test_pattern": 1,
+    "adc_frames": 6816136,
+    "adc_faults": 0,
+    "late_ticks": 0,
+    "max_tick_us": 11,
+    "max_tick_gap_us": 32,
+    "raw": [
+      26,
+      12,
+      18,
+      12,
+      22,
+      16,
+      8
+    ],
+    "audio": [
+      {
+        "active": 0,
+        "packets": 120044,
+        "frames": 3841462,
+        "underflows": 0,
+        "overflows": 0,
+        "startup_packets": 1,
+        "startup_discarded": 195
+      },
+      {
+        "active": 0,
+        "packets": 120041,
+        "frames": 3841365,
+        "underflows": 0,
+        "overflows": 0,
+        "startup_packets": 1,
+        "startup_discarded": 157
+      }
+    ]
+  },
+  "restored": {
+    "protocol": "PZUA1",
+    "rate": 32000,
+    "channels": 7,
+    "streams": 2,
+    "prototype": 1,
+    "confirmed": 1,
+    "test_pattern": 0,
+    "adc_frames": 6816476,
+    "adc_faults": 0,
+    "late_ticks": 0,
+    "max_tick_us": 11,
+    "max_tick_gap_us": 32,
+    "raw": [
+      26,
+      16,
+      15,
+      11,
+      15,
+      35,
+      28
+    ],
+    "audio": [
+      {
+        "active": 0,
+        "packets": 120044,
+        "frames": 3841462,
+        "underflows": 0,
+        "overflows": 0,
+        "startup_packets": 1,
+        "startup_discarded": 195
+      },
+      {
+        "active": 0,
+        "packets": 120041,
+        "frames": 3841365,
+        "underflows": 0,
+        "overflows": 0,
+        "startup_packets": 1,
+        "startup_discarded": 157
+      }
+    ]
+  }
+}

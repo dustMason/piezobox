@@ -1,0 +1,16 @@
+{
+  "callbacks": 313,
+  "rate": 32000,
+  "channels": [
+    {
+      "channel": 1,
+      "samples": 154624,
+      "mean": -1.2944e-05,
+      "rms": 0.001615679,
+      "peak": 0.005218506
+    }
+  ],
+  "pattern_frames": 0,
+  "sequence_errors": 0,
+  "sample_errors": 0
+}

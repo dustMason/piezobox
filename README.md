@@ -36,11 +36,13 @@ no Apple developer account is required. [More app details](macOS/README.md).
 
 ## Teensy firmware
 
-- **Ready to flash:** [`firmware/piezo-lc-usb-audio.hex`](firmware/piezo-lc-usb-audio.hex), for **Teensy LC only**.
-- **Source:** [`piezo_lc_audio/`](piezo_lc_audio/) and [`usb_audio/`](usb_audio/).
+- **Source:** [`piezo_lc_audio/piezo_lc_audio.ino`](piezo_lc_audio/piezo_lc_audio.ino)
+  and the USB core additions in [`usb_audio/`](usb_audio/), for **Teensy LC only**.
 - **Build and flash:** [firmware setup guide](docs/usb-audio.md), including pinned
   Teensy 1.62.0 toolchain setup and USB-only updates. A plain Arduino sketch build
   is insufficient: the helper applies the required USB core changes.
+- **Build output:** `build/usb-audio/build/piezo_lc_audio.ino.hex`.
+  Compiled firmware is generated locally and excluded from Git.
 
 The existing box clips negative piezo signals; firmware removes DC but cannot
 recover that lost audio. The complete physical jack-to-channel map is still
@@ -55,6 +57,6 @@ python3 -B -m unittest -v test_capture.py test_streaming.py test_usb_audio.py
 ```
 
 Python 3.9+ is needed only for firmware build tools and host tests. App code lives
-in `macOS/Sources/`. Older serial firmware, capture tools, and rollback binaries
+in `macOS/Sources/`. Older serial firmware source and capture tools
 are retained; see the [legacy guide](docs/legacy-serial.txt) and
 [build history](validation/build-history.txt).

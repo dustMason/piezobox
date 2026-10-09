@@ -1,2 +1,0 @@
-# Preserve the compiled firmware byte-for-byte, including its recorded checksum.
-*.hex binary

@@ -11,6 +11,7 @@ work/
 .arduino/
 .build/
 .swiftpm/
+*.hex
 
 # Recordings and raw ADC captures
 captures/

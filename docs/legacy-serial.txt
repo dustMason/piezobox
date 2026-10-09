@@ -1,5 +1,8 @@
 PIEZO BOX — TEENSY LC USB-SERIAL WAVEFORM EXPERIMENT
 
+ARCHIVE NOTE: Compiled HEX files mentioned below are no longer tracked in Git.
+Firmware source and historical build records are retained.
+
 CURRENT FIRMWARE: The box now exposes mono and seven-channel USB Audio inputs.
 See README.md and docs/usb-audio.md at the repository root.
 This file describes the older serial builds. Run commands from the repository root.

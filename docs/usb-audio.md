@@ -77,9 +77,11 @@ does not launch Teensy Loader. Build flags are LC / 48 MHz / `-O3 --specs=nano.s
 The generated `core.patch` and `core-provenance.json` record the core changes.
 A plain compile against the unmodified core is not this firmware build.
 
-The retained release binary is `firmware/piezo-lc-usb-audio.hex`. Its source and
-binary hashes are in `validation/2026-10-09-usb-audio-build.json`.
-The older `firmware/piezo-lc-v2.hex` is the working serial-only fallback.
+Compiled HEX files are local build outputs and are not tracked in Git.
+`validation/2026-10-09-usb-audio-build.json` records source and binary hashes from
+the verified hardware release. Historical reports refer to the binary's former
+repository path, `firmware/piezo-lc-usb-audio.hex`; build it from source using the
+command above. Older serial firmware source remains in `piezo_lc_capture/`.
 
 Development options:
 
@@ -91,27 +93,26 @@ Development options:
 
 ## Upload and recovery
 
-For a first flash, download [Teensy Loader](https://www.pjrc.com/teensy/loader_mac.html),
-open `firmware/piezo-lc-usb-audio.hex`, connect the LC, and press its Program
-button. Use Loader's Program and Reboot buttons, or enable Auto mode before
-pressing Program. The ready-to-flash HEX needs no compiler installation.
+Build the firmware above first. For a first flash, download
+[Teensy Loader](https://www.pjrc.com/teensy/loader_mac.html), open
+`build/usb-audio/build/piezo_lc_audio.ino.hex`, connect the LC, and press its
+Program button. Use Loader's Program and Reboot buttons, or enable Auto mode
+before pressing Program.
 
 For updates to a box already running this firmware, the retained CDC interface
-supports the stock Teensy software-reboot request. After the toolchain setup
+supports the stock Teensy software-reboot request. After the firmware build
 above, stop audio/serial clients and run:
 
 ```sh
 .arduino/data/packages/teensy/tools/teensy-tools/1.62.0/teensy_post_compile \
-  -file=piezo-lc-usb-audio \
-  -path="$PWD/firmware" \
+  -file=piezo_lc_audio.ino \
+  -path="$PWD/build/usb-audio/build" \
   -tools="$PWD/.arduino/data/packages/teensy/tools/teensy-tools/1.62.0" \
   -board=TEENSYLC -reboot
 ```
 
-Connect only the target Teensy for this command. To upload your own build,
-replace `-file` with `piezo_lc_audio.ino` and `-path` with
-`"$PWD/build/usb-audio/build"`. USB-only reprogramming was exercised across mono,
-seven-channel, dual-input, and permanent builds.
+Connect only the target Teensy for this command. USB-only reprogramming was
+exercised across mono, seven-channel, dual-input, and permanent builds.
 
 The physical Program button remains the recovery path if firmware ceases to
 service USB. The release has no automatic 90-second reboot and needs no host

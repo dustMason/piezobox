@@ -62,3 +62,28 @@ this run. No deliberate piezo excitation was coordinated for this check, and
 the physical connection state of the piezo leads was not independently verified.
 It does not establish contact-mic sound quality, safe peak input voltage,
 anti-aliasing, channel isolation, multichannel rates, or live monitoring latency.
+
+V2 CONTINUOUS STREAMING FOLLOW-UP — 2026-10-09
+
+The current source adds PZLC2 packed 12-bit streaming, 64-bit counters,
+continuous captures stopped by the host, and linked ADC/channel-select DMA
+for the fast profile. Legacy CAP/PZLC1 remains supported for Piezo Scope.
+
+Build: Teensy LC / USB Serial / CPU 48 MHz / -O3 --specs=nano.specs.
+Teensy boards package 1.62.0, compiler 15.2.1. Compile-only hook disabled.
+Program: 24,948 / 63,488 bytes flash.
+Global/static data: 5,760 / 8,192 bytes RAM.
+Remaining for stack/local variables: 2,432 bytes.
+Host codec tests: 21 / 21 PASS, covering PZLC1 and PZLC2.
+
+The v2 binary was uploaded by software reboot over USB, without pressing the
+Program button. The responding device reported FW=2. This is an upload and
+functional test, not an independent flash readback/checksum verification.
+
+Current binary: firmware/piezo-lc-v2.hex.
+HEX SHA-256: a8b252037f951efb153c07dd57ba034979b5853b203582a778755763e51122f5
+Sketch SHA-256: e362c4009d1feedbbfa9c58f83f08c3d720007ac0dbd99a1a54a5bcc1a8be5af
+The root HEX and its initial-build checksum above are intentionally unchanged.
+
+See validation/2026-10-09-v2-throughput.txt for measured rate limits and test
+durations, and adjacent JSON reports for counters and build provenance.

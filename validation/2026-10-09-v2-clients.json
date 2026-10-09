@@ -1,0 +1,180 @@
+{
+  "continuous_ctrl_c": {
+    "rate": 32000,
+    "pins": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21
+    ],
+    "profile": "fast",
+    "requested_frames": 0,
+    "received_frames": 152450,
+    "sequence_gaps": 0,
+    "complete": true,
+    "timing_checks_passed": true,
+    "last_live_stats": {
+      "attempted_frames": 127983,
+      "device_dropped_frames": 0,
+      "slow_callbacks": 0,
+      "late_intervals": 0,
+      "capture_elapsed_us": 3999516,
+      "max_callback_us": 10,
+      "max_interval_us": 33,
+      "stop_reason": 0
+    },
+    "attempted_frames": 152450,
+    "device_dropped_frames": 0,
+    "slow_callbacks": 0,
+    "late_intervals": 0,
+    "capture_elapsed_us": 4764119,
+    "max_callback_us": 10,
+    "max_interval_us": 33,
+    "stop_reason": 1,
+    "wire_bytes": 1753512,
+    "effective_frame_rate": 31999.620496465348
+  },
+  "offline_decode": {
+    "rate": 32000,
+    "channels": 7,
+    "requested_frames": 0,
+    "pins": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21
+    ],
+    "protocol": 2,
+    "profile": "fast",
+    "complete": true,
+    "error": null,
+    "received_frames": 152450,
+    "inserted_silent_frames": 0,
+    "dc_block_hz": 20,
+    "pcm_gain": 8,
+    "host_pcm_clipped_samples": 0,
+    "monitor_underflows": 0,
+    "timing_checks_passed": true,
+    "last_live_stats": {
+      "attempted_frames": 127983,
+      "device_dropped_frames": 0,
+      "slow_callbacks": 0,
+      "late_intervals": 0,
+      "capture_elapsed_us": 3999516,
+      "max_callback_us": 10,
+      "max_interval_us": 33,
+      "stop_reason": 0
+    },
+    "attempted_frames": 152450,
+    "device_dropped_frames": 0,
+    "slow_callbacks": 0,
+    "late_intervals": 0,
+    "capture_elapsed_us": 4764119,
+    "max_callback_us": 10,
+    "max_interval_us": 33,
+    "stop_reason": 1,
+    "effective_frame_rate": 31999.620496465348,
+    "output_frames": 152450,
+    "inputs": [
+      {
+        "pin": 15,
+        "analog": "A1",
+        "minimum": 1,
+        "maximum": 79,
+        "zero_samples": 0,
+        "full_scale_samples": 0
+      },
+      {
+        "pin": 16,
+        "analog": "A2",
+        "minimum": 1,
+        "maximum": 66,
+        "zero_samples": 0,
+        "full_scale_samples": 0
+      },
+      {
+        "pin": 17,
+        "analog": "A3",
+        "minimum": 1,
+        "maximum": 69,
+        "zero_samples": 0,
+        "full_scale_samples": 0
+      },
+      {
+        "pin": 18,
+        "analog": "A4",
+        "minimum": 1,
+        "maximum": 72,
+        "zero_samples": 0,
+        "full_scale_samples": 0
+      },
+      {
+        "pin": 19,
+        "analog": "A5",
+        "minimum": 1,
+        "maximum": 69,
+        "zero_samples": 0,
+        "full_scale_samples": 0
+      },
+      {
+        "pin": 20,
+        "analog": "A6",
+        "minimum": 1,
+        "maximum": 97,
+        "zero_samples": 0,
+        "full_scale_samples": 0
+      },
+      {
+        "pin": 21,
+        "analog": "A7",
+        "minimum": 1,
+        "maximum": 91,
+        "zero_samples": 0,
+        "full_scale_samples": 0
+      }
+    ]
+  },
+  "legacy_a7": {
+    "rate": 16000,
+    "channels": 1,
+    "requested_frames": 80000,
+    "pins": [
+      21
+    ],
+    "complete": true,
+    "error": null,
+    "received_frames": 80000,
+    "inserted_silent_frames": 0,
+    "dc_block_hz": 20,
+    "pcm_gain": 8,
+    "host_pcm_clipped_samples": 0,
+    "monitor_underflows": 0,
+    "timing_checks_passed": true,
+    "attempted_frames": 80000,
+    "device_dropped_frames": 0,
+    "slow_callbacks": 0,
+    "late_intervals": 0,
+    "max_callback_us": 10,
+    "max_interval_us": 64,
+    "capture_elapsed_us": 5000045,
+    "stop_reason": 0,
+    "effective_frame_rate": 15999.856001295988,
+    "output_frames": 80000,
+    "inputs": [
+      {
+        "pin": 21,
+        "analog": "A7",
+        "minimum": 1,
+        "maximum": 131,
+        "zero_samples": 0,
+        "full_scale_samples": 0
+      }
+    ]
+  }
+}

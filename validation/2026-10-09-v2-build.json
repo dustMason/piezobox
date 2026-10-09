@@ -1,0 +1,14 @@
+{
+  "board": "Teensy LC",
+  "fqbn": "teensy:avr:teensyLC:usb=serial,speed=48,opt=o3std",
+  "optimization": "-O3 --specs=nano.specs",
+  "teensy_boards_version": "1.62.0",
+  "flash_bytes": 24948,
+  "static_ram_bytes": 5760,
+  "ram_remaining_for_stack_bytes": 2432,
+  "upload": "Teensy software reboot over USB; no button press",
+  "files": {
+    "piezo_lc_capture/piezo_lc_capture.ino": "e362c4009d1feedbbfa9c58f83f08c3d720007ac0dbd99a1a54a5bcc1a8be5af",
+    "firmware/piezo-lc-v2.hex": "a8b252037f951efb153c07dd57ba034979b5853b203582a778755763e51122f5"
+  }
+}

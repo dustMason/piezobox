@@ -1,0 +1,42 @@
+TEENSY LC SEVEN-INPUT THROUGHPUT — 2026-10-09
+
+Selected operating rate: 32,000 samples/second per input, fast DMA profile.
+Seven inputs: 224,000 individual ADC readings/second, all 12 bits retained.
+Raw sample payload: 336 kB/s; framed USB serial stream: about 368 kB/s.
+
+CONTINUOUS HARDWARE RUNS
+fast: requested 38,000 Hz/input; 120.003s; 4,557,057 seven-input frames; actual 37974.665 Hz/input; pass=True.
+  Dropped=0, slow=0, late=0; max timer callback=10 us, max interval=28 us.
+fast: requested 32,000 Hz/input; 180.008s; 5,760,267 seven-input frames; actual 31999.990 Hz/input; pass=True.
+  Dropped=0, slow=0, late=0; max timer callback=10 us, max interval=33 us.
+settled: requested 12,000 Hz/input; 60.022s; 720,267 seven-input frames; actual 11999.981 Hz/input; pass=True.
+  Dropped=0, slow=0, late=0; max timer callback=57 us, max interval=85 us.
+
+RATE BOUNDARY
+The original firmware passed 8 kHz/input and overloaded at 12 kHz/input.
+V2 fast passed short tests through 39 kHz/input. At 40 and 44.1 kHz, frames
+were dropped; at 48 kHz and higher the acquisition overrun guard stopped it.
+V2 settled passed 13 kHz/input in a five-second run; 14 kHz lost frames.
+32 kHz fast was selected by the user for the app and normal operation.
+
+METHOD AND SCOPE
+Physical Teensy LC, 48 MHz, USB Serial, inputs 15–21. The long receiver tests
+parsed sequence/counter packets without per-sample WAV work in the hot path.
+They used open-ended STREAM commands and host STOP, with no fixed frame limit.
+Continuous-run code removes the old 600-second command limit, but these runs
+do not establish indefinite reliability or >71-minute micros-wrap behavior.
+The seven jack/piezo assignments are not fully mapped; this tests seven ADC
+inputs, not proof of seven connected and independently identified transducers.
+Fast mode uses short sample windows without dummy conversions. Source settling,
+analog crosstalk, hum, clipping, protection, and anti-aliasing are unqualified.
+The LC multiplexes one ADC; the seven values in a frame are not simultaneous.
+The existing circuit cannot capture the clipped negative half of the waveform.
+
+BUILD AND HOST VERIFICATION
+Firmware compiled: 24,948 bytes flash, 5,760 bytes static RAM.
+Python codec tests: 21 passed. Separate USB archive/decode and legacy-client
+checks are recorded in validation/2026-10-09-v2-clients.json.
+Firmware was updated by software reboot over USB, with no button press.
+Build flags, source/binary hashes, and individual rate results are retained
+in the adjacent JSON files. This is the best measured range of this firmware,
+not a proof of the absolute limit of every possible LC firmware design.

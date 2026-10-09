@@ -1,5 +1,12 @@
 PIEZO BOX — TEENSY LC USB-SERIAL WAVEFORM EXPERIMENT
 
+V2 UPDATE — CONTINUOUS SEVEN-INPUT STREAMING
+
+This file describes the original CAP/PZLC1 workflow, which remains supported.
+For continuous packed streaming, DMA acquisition, measured multichannel rates,
+and USB-only uploading, use README.md and docs/protocol-v2.md. The root HEX is
+the preserved initial prototype, not the current v2 firmware.
+
 WHAT THIS DOES
 
 The .ino captures continuously sampled ADC waveforms. It does not detect hits

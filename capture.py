@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record Teensy LC ADC waveforms over USB serial, or decode a saved PZLC1 file.
+"""Record Teensy LC ADC waveforms over USB serial, or decode a PZLC1/PZLC2 file.
 
 Only the serial commands require pyserial. Optional live monitoring requires
 sounddevice. Decoding and the protocol checks use the Python standard library.
@@ -16,6 +16,7 @@ import struct
 import sys
 import time
 import wave
+from streaming import StreamError
 
 
 class CaptureError(Exception):
@@ -43,6 +44,9 @@ def read_header(stream):
         raise CaptureError("Header exceeds 200 bytes")
     try:
         fields = line.decode("ascii").split()
+        if fields and fields[0] == "PZLC2":
+            from streaming import parse_header
+            return parse_header(line)
         if len(fields) < 5 or fields[0] != "PZLC1":
             raise ValueError()
         rate, channels, frames = map(int, fields[1:4])
@@ -51,13 +55,22 @@ def read_header(stream):
                 not 1 <= frames <= rate * 600 or len(pins) != channels or
                 len(set(pins)) != channels or any(not 14 <= p <= 26 for p in pins)):
             raise ValueError()
-    except (UnicodeError, ValueError):
+    except (UnicodeError, ValueError, StreamError):
         raise CaptureError(f"Unexpected firmware header: {bytes(line)!r}") from None
     return {"rate": rate, "channels": channels, "requested_frames": frames, "pins": pins}
 
 
 def packets(stream, header):
     channels = header["channels"]
+    if header.get("protocol") == 2:
+        from streaming import packets as packed_packets
+        for kind, packet in packed_packets(stream, header):
+            if kind != "data":
+                yield kind, packet
+            else:
+                values = packet["values"]
+                yield "data", [(packet["first"] + i, *values[i*channels:(i+1)*channels]) for i in range(packet["count"])]
+        return
     frame_struct = struct.Struct("<I" + "H" * channels)
     while True:
         magic = read_exact(stream, 4)
@@ -204,12 +217,15 @@ def convert_stream(stream, header, prefix, *, gain=8.0, cutoff=20.0,
                     count -= n
 
             for kind, payload in packets(stream, header):
+                if kind == "stats":
+                    report["last_live_stats"] = payload
+                    continue
                 if kind == "end":
                     end_stats = payload
                     total = payload["attempted_frames"]
-                    if total < expected or total > header["requested_frames"]:
+                    if total < expected or (header["requested_frames"] and total > header["requested_frames"]):
                         raise CaptureError("End packet frame count is inconsistent with received samples")
-                    if payload["stop_reason"] not in (0, 1, 2, 3):
+                    if payload["stop_reason"] not in (0, 1, 2, 3, 4, 5):
                         raise CaptureError("Unknown stop reason")
                     if payload["stop_reason"] == 0 and total != header["requested_frames"]:
                         raise CaptureError("Normal completion has the wrong frame count")
@@ -221,7 +237,7 @@ def convert_stream(stream, header, prefix, *, gain=8.0, cutoff=20.0,
                 pcm = []
                 for frame in payload:
                     sequence, values = frame[0], frame[1:]
-                    if sequence < expected or sequence >= header["requested_frames"]:
+                    if sequence < expected or (header["requested_frames"] and sequence >= header["requested_frames"]):
                         raise CaptureError("Repeated, reversed, or out-of-range frame sequence")
                     if sequence > expected:
                         emit(pcm); pcm = []
@@ -248,11 +264,12 @@ def convert_stream(stream, header, prefix, *, gain=8.0, cutoff=20.0,
             effective_rate = expected / elapsed if elapsed else 0
             report["effective_frame_rate"] = effective_rate
             rate_error = abs(effective_rate / rate - 1) if effective_rate else 1
+            normal_end = end_stats["stop_reason"] == 0 or (header["requested_frames"] == 0 and end_stats["stop_reason"] == 1)
             report["timing_checks_passed"] = bool(
-                end_stats["stop_reason"] == 0 and not end_stats["device_dropped_frames"] and
+                normal_end and not end_stats["device_dropped_frames"] and
                 not end_stats["slow_callbacks"] and not end_stats["late_intervals"] and
                 rate_error < 0.02)
-            report["complete"] = end_stats["stop_reason"] == 0
+            report["complete"] = normal_end
     except BaseException as exc:
         report["error"] = str(exc) or type(exc).__name__
         raise
@@ -374,7 +391,7 @@ def main(argv=None):
     except KeyboardInterrupt:
         print("\nStopped. Existing partial files are retained; use a new --out for another take.", file=sys.stderr)
         return 130
-    except (CaptureError, OSError) as exc:
+    except (CaptureError, StreamError, OSError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 

@@ -1,0 +1,39 @@
+BUILD AND VALIDATION — 2026-10-09
+
+Firmware: compile and link PASS.
+Arduino CLI 1.5.1; PJRC Teensy boards package 1.62.0.
+Target: teensy:avr:teensyLC:usb=serial,speed=48,opt=osstd.
+Compiler package: teensy-compile 15.2.1 (macOS ARM64).
+Program: 17,956 / 63,488 bytes flash.
+Global/static data: 4,380 / 8,192 bytes RAM.
+Remaining for stack/local variables: 3,812 bytes.
+
+The post-build hook that launches Teensy Loader was disabled during verification.
+No upload, board reset, physical input excitation, or firmware readback occurred.
+The supplied .hex is for TEENSY LC ONLY, with USB Serial and CPU 48 MHz.
+
+Host tests: 12 / 12 PASS using synthetic data.
+Covered packet fragmentation, channel ordering and separation, missing-frame
+silence insertion, DC blocking, overload completion status, truncated streams,
+invalid samples/sequences, counter mismatches, pin validation, output preservation,
+and map-mode behavior.
+
+Serial integration: PASS for the tested data path.
+The actual capture.py command used pyserial against a local simulated device.
+It recorded 1,000 two-channel frames at a declared 1,000 frames/s, wrote a valid
+stereo WAV plus individual channel files, and retained a raw .pzlc archive.
+The decode command reproduced byte-identical PCM from that archive.
+All ADC values and timing statistics in that test were synthetic.
+The test-only pseudo-terminal teardown stalled after the commands completed;
+its harness was stopped and the resulting files were independently checked.
+
+NOT VALIDATED:
+- A physical Teensy LC running this firmware.
+- Sustained sample rate, USB timing, or ADC settling on the user's hardware.
+- Actual piezo audio, analog protection, bias, or anti-alias filtering.
+- Complete seven-channel jack/ADC mapping.
+- Live sounddevice monitoring, its latency, or output-device compatibility.
+
+Package integrity:
+Sketch SHA-256: 16241eb779d0aecae6dcb21ed2b8dc87b2cc78d478fc8b3bc84efe164d8a8503
+HEX SHA-256: db155276dc60fc7e039d7fb3d9eab738970cb8e8525c58761d8e0b99971f849f

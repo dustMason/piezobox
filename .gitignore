@@ -1,0 +1,21 @@
+# Local environments and Python caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Builds and local tool installations
+build/
+work/
+.arduino/
+
+# Recordings and raw ADC captures
+captures/
+*.wav
+*.pzlc
+
+# Local machine files
+.DS_Store
+.env
+.env.*

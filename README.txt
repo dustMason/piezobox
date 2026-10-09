@@ -39,7 +39,7 @@ possible clipping, loading, aliasing, and ADC-channel crosstalk. The software
 DC blocker removes an offset but cannot restore a clipped negative waveform.
 This is a waveform/lo-fi experiment, not a clean contact-mic preamp design.
 
-1. BUILD THE FIRMWARE (NO HARDWARE UPLOAD HAS BEEN PERFORMED FOR YOU)
+1. BUILD AND UPLOAD THE FIRMWARE
 
 Install Arduino IDE and PJRC's Teensy boards package using its official guide:
 https://www.pjrc.com/teensy/td_download.html
@@ -166,8 +166,11 @@ VALIDATION
 Host tests use synthetic data and do not require a board:
   python3 -m unittest -v test_capture.py
 
-See BUILD-VALIDATION.txt for the actual compiler and test results. No physical
-board, piezo capture, input voltage, or live playback has been validated here.
+See BUILD-VALIDATION.txt for the compiler, host test, and physical follow-up
+results. On 2026-10-09 this firmware was flashed to the LC and completed a
+five-second A7 capture at 16 kHz: 80,000 frames, zero drops, zero slow callbacks,
+and zero late intervals. Actual piezo audio quality, input-voltage protection,
+multichannel performance, and live playback remain unverified.
 
 PRIMARY REFERENCES
 

@@ -62,9 +62,12 @@ arduino-cli compile \
   piezo_lc_capture
 ```
 
-The initial firmware compiles with Teensy boards package 1.62.0. Host tests and
-a simulated serial capture pass. No physical Teensy capture or live monitor has
-been tested by this software work.
+The firmware compiles with Teensy boards package 1.62.0. Host tests and a
+simulated serial capture pass. On 2026-10-09 it was flashed to the physical LC;
+a five-second A7 capture at 16 kHz received all 80,000 frames with zero dropped
+frames, slow callbacks, or late intervals. See the [hardware result](validation/2026-10-09-a7-flash-check.json).
+This verifies ADC/USB transport for that run, not piezo audio quality, analog
+protection, live monitoring, or multichannel performance.
 
 ## Hardware limits
 

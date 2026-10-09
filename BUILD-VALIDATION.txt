@@ -27,7 +27,7 @@ All ADC values and timing statistics in that test were synthetic.
 The test-only pseudo-terminal teardown stalled after the commands completed;
 its harness was stopped and the resulting files were independently checked.
 
-NOT VALIDATED:
+NOT VALIDATED AT INITIAL BUILD (see the physical follow-up below):
 - A physical Teensy LC running this firmware.
 - Sustained sample rate, USB timing, or ADC settling on the user's hardware.
 - Actual piezo audio, analog protection, bias, or anti-alias filtering.
@@ -37,3 +37,28 @@ NOT VALIDATED:
 Package integrity:
 Sketch SHA-256: 16241eb779d0aecae6dcb21ed2b8dc87b2cc78d478fc8b3bc84efe164d8a8503
 HEX SHA-256: db155276dc60fc7e039d7fb3d9eab738970cb8e8525c58761d8e0b99971f849f
+
+PHYSICAL FLASH AND TRANSPORT FOLLOW-UP — 2026-10-09
+
+The user authorized flashing the connected LC and pressed its Program button.
+Teensy Loader loaded the committed HEX above and reported Download Complete,
+then Reboot OK. USB discovery identified the rebooted board as Teensy LC with
+USB Serial. The INFO command returned the expected PZLC1 ADC12 capture protocol.
+
+A real five-second capture of pin 21/A7 at 16,000 frames/s completed normally:
+  Received: 80,000 frames.
+  Dropped / inserted silent frames: 0 / 0.
+  Slow callbacks / late intervals: 0 / 0.
+  Maximum callback duration: 16 microseconds.
+  Maximum callback interval: 69 microseconds.
+  Effective frame rate: 15,999.8464 frames/s.
+  Raw ADC minimum / maximum: 1 / 38.
+  Host PCM clipping / ADC full-scale samples: 0 / 0.
+
+The exact receiver report is validation/2026-10-09-a7-flash-check.json.
+The local WAV and raw transport archive are retained under ignored captures/.
+This validates physical firmware startup and one-channel ADC/USB transport for
+this run. No deliberate piezo excitation was coordinated for this check, and
+the physical connection state of the piezo leads was not independently verified.
+It does not establish contact-mic sound quality, safe peak input voltage,
+anti-aliasing, channel isolation, multichannel rates, or live monitoring latency.

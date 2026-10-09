@@ -9,6 +9,8 @@ __pycache__/
 build/
 work/
 .arduino/
+.build/
+.swiftpm/
 
 # Recordings and raw ADC captures
 captures/

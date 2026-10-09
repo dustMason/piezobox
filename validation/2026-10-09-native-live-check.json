@@ -1,0 +1,18 @@
+{
+  "phase": "Stopped",
+  "pin": 20,
+  "sampleRate": 16000,
+  "receivedFrames": 6391263,
+  "missingFrames": 0,
+  "timingIssues": 0,
+  "waveformBins": 800,
+  "rawMinimum": 1,
+  "rawMaximum": 3268,
+  "audioRunning": true,
+  "audioScheduledFrames": 6387968,
+  "audioRenderedFrames": 5174335,
+  "audioQueuedFrames": 3584,
+  "audioClippedSamples": 15934,
+  "audioRebuffers": 2,
+  "scope": "Live native-app snapshot; end-of-session timing counters were not yet available. Audio-engine rendering is not a verification of physical audibility or analog fidelity."
+}

@@ -11,10 +11,28 @@ mix through the computer. The device does **not** appear as a USB audio input in
 Start with the known cable-tip connection to **pin 21 / A7**. The complete seven-input
 mapping and sustainable multichannel sample rate still need hardware validation.
 
+## Native Mac viewer
+
+**Piezo Scope** is a small Swift app for hearing and seeing one input at a time.
+It discovers the Teensy, shows a live waveform and level meter, and plays through
+the Mac's current sound output using AVAudioEngine. It uses the existing firmware
+and does not need Python. See the [Mac app guide](macOS/README.md).
+
+```sh
+./macOS/build-app.sh
+open "build/Piezo Scope.app"
+```
+
+Select an input and press Start. Stop before changing inputs. Listen can be
+muted independently of the waveform; Hold freezes only the view. Volume and
+Boost affect listening, while View scale changes only the waveform display.
+DAW/virtual-device integration is future work.
+
 ## Files
 
 - [`piezo_lc_capture/piezo_lc_capture.ino`](piezo_lc_capture/piezo_lc_capture.ino): capture firmware, Teensy LC only.
 - [`capture.py`](capture.py): serial recorder, pin-mapping mode, and offline decoder.
+- [`macOS/`](macOS/): native SwiftUI waveform viewer and AVAudioEngine monitor.
 - [`README.txt`](README.txt): full setup, recording, mapping, and troubleshooting guide.
 - [`BUILD-VALIDATION.txt`](BUILD-VALIDATION.txt): compiler results, checksums, test coverage, and untested hardware behavior.
 - [`piezo_lc_capture.teensy-lc.hex`](piezo_lc_capture.teensy-lc.hex): initial compiled LC firmware snapshot.

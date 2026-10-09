@@ -4,7 +4,7 @@ import argparse,json,time
 from pathlib import Path
 import serial
 from serial.tools import list_ports
-p=argparse.ArgumentParser(description=__doc__);p.add_argument('--serial',default='1277650');p.add_argument('--out',type=Path);a=p.parse_args()
+p=argparse.ArgumentParser(description=__doc__);p.add_argument('--serial',required=True,help='USB serial number of the target Teensy');p.add_argument('--out',type=Path);a=p.parse_args()
 end=time.monotonic()+12
 while time.monotonic()<end:
     for device in list_ports.comports():

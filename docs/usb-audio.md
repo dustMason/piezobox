@@ -37,19 +37,43 @@ checked through macOS CoreAudio, not every DAW or other operating system.
 
 ## Build
 
-Install the PJRC Teensy boards package **1.62.0** using Arduino CLI. Then:
+Requires Python 3.9+ and [Arduino CLI](https://arduino.github.io/arduino-cli/latest/installation/)
+on your PATH (`brew install arduino-cli` if you use Homebrew). These instructions
+are for macOS and run from the repository root; other build hosts are untested.
+The Mac app does not need this toolchain.
+
+Install the pinned [PJRC Teensy boards package](https://www.pjrc.com/teensy/td_download.html)
+into a repository-local, ignored directory. Run this setup once per clone:
+
+```sh
+mkdir -p .arduino
+cat > .arduino/arduino-cli.yaml <<EOF
+board_manager:
+  additional_urls:
+    - https://www.pjrc.com/teensy/package_teensy_index.json
+directories:
+  data: "$PWD/.arduino/data"
+  downloads: "$PWD/.arduino/downloads"
+  user: "$PWD/.arduino/user"
+EOF
+arduino-cli --config-file .arduino/arduino-cli.yaml core update-index
+arduino-cli --config-file .arduino/arduino-cli.yaml core install teensy:avr@1.62.0
+```
+
+Then build:
 
 ```sh
 python3 tools/build_usb_audio.py \
-  --arduino-cli /path/to/arduino-cli \
-  --data-dir /path/to/arduino-data \
+  --arduino-cli "$(command -v arduino-cli)" \
+  --data-dir .arduino/data \
   --channels 7 --mono-companion
 ```
 
 The default output is `build/usb-audio/build/piezo_lc_audio.ino.hex`. The build
 copies the stock Teensy core into an isolated directory, applies guarded source
 patches, and reuses the installed compiler tools. It neither edits the installed
-core nor uploads. Build flags are LC / 48 MHz / `-O3 --specs=nano.specs`.
+core nor uploads. It disables `recipe.hooks.postbuild.1.pattern` so compilation
+does not launch Teensy Loader. Build flags are LC / 48 MHz / `-O3 --specs=nano.specs`.
 The generated `core.patch` and `core-provenance.json` record the core changes.
 A plain compile against the unmodified core is not this firmware build.
 
@@ -67,10 +91,27 @@ Development options:
 
 ## Upload and recovery
 
-Use Teensy Loader with the LC binary. The retained CDC interface accepts the
-stock Teensy software-reboot request, including the 134-baud command used by
-Teensy tools. USB-only reprogramming was exercised across mono, seven-channel,
-dual-input, and permanent builds. Stop clients before changing firmware.
+For a first flash, download [Teensy Loader](https://www.pjrc.com/teensy/loader_mac.html),
+open `firmware/piezo-lc-usb-audio.hex`, connect the LC, and press its Program
+button. Use Loader's Program and Reboot buttons, or enable Auto mode before
+pressing Program. The ready-to-flash HEX needs no compiler installation.
+
+For updates to a box already running this firmware, the retained CDC interface
+supports the stock Teensy software-reboot request. After the toolchain setup
+above, stop audio/serial clients and run:
+
+```sh
+.arduino/data/packages/teensy/tools/teensy-tools/1.62.0/teensy_post_compile \
+  -file=piezo-lc-usb-audio \
+  -path="$PWD/firmware" \
+  -tools="$PWD/.arduino/data/packages/teensy/tools/teensy-tools/1.62.0" \
+  -board=TEENSYLC -reboot
+```
+
+Connect only the target Teensy for this command. To upload your own build,
+replace `-file` with `piezo_lc_audio.ino` and `-path` with
+`"$PWD/build/usb-audio/build"`. USB-only reprogramming was exercised across mono,
+seven-channel, dual-input, and permanent builds.
 
 The physical Program button remains the recovery path if firmware ceases to
 service USB. The release has no automatic 90-second reboot and needs no host
@@ -92,6 +133,18 @@ The test pattern replaces microphone samples on USB only; ADC sampling keeps
 running. It is off at boot. Always restore `TEST_OFF` after verification.
 `tools/qualify_usb_audio.py` does so in a `finally` block. Do not interpret test
 pattern captures as physical piezo recordings.
+
+Python serial helpers need `pyserial`; install them separately from the Mac app:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m serial.tools.list_ports -v
+.venv/bin/python tools/confirm_usb_audio.py --serial YOUR_TEENSY_USB_SERIAL
+```
+
+Use the USB serial number reported by `list_ports`. The confirmation helper
+also prints firmware status; it targets only the specified Teensy.
 
 Counters are 32-bit and wrap; use unsigned differences for long-run diagnostics.
 The PCM stream itself does not depend on a finite frame count. No claim of

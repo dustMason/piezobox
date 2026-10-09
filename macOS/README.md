@@ -52,14 +52,20 @@ triggering, waveform history, and the retained serial-protocol decoder tests.
 
 ## Build and test
 
+From the repository root, on macOS 14+ with Swift 6+ (Xcode 16+ or compatible
+Command Line Tools):
+
 ```sh
 swift test --package-path macOS
 ./macOS/build-app.sh
+open "build/Piezo Scope.app"
 ```
 
-The locally signed app bundle is written to `build/Piezo Scope.app`. It contains
-no audio-driver installer. This is a personal development build, not an App Store
-submission. App Review is outside the requested scope.
+The app uses only Apple frameworks and builds for the current Mac's architecture.
+The locally signed bundle is written to `build/Piezo Scope.app`; no Apple
+developer account is required. Open this bundle so microphone permission uses
+its identity and usage description. If access was denied, enable Piezo Scope
+in System Settings → Privacy & Security → Microphone and start capture again.
 
 `macOS/tools/check-midi.swift` is a separate CoreMIDI receiver for integration
 checks. The root `tools/usb_audio_probe.c`, `tools/list_audio.swift`, and

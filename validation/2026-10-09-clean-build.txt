@@ -1,0 +1,26 @@
+CLEAN SOURCE BUILD — 2026-10-09
+
+Validated from a copy of repository source files, with no inherited app build
+products, virtual environment, Arduino installation, or recordings. The checkout
+path included spaces. Host: Apple Silicon Mac, Apple Swift 6.4, Arduino CLI 1.5.1.
+
+Mac app:
+- swift test --package-path macOS: 16 tests passed.
+- ./macOS/build-app.sh: release bundle, icon generation, and ad-hoc signing passed.
+- codesign --verify --deep --strict and Info.plist validation passed.
+- Separate x86_64 release compilation passed; Intel runtime was not exercised.
+- Both Mach-O binaries report macOS 14.0 as their minimum OS version.
+
+Firmware:
+- Followed docs/usb-audio.md with a fresh repository-local Arduino configuration.
+- Downloaded and installed teensy:avr@1.62.0 and its compiler dependencies.
+- Built seven channels plus mono using tools/build_usb_audio.py; no upload.
+- Flash: 15,456 bytes. Static RAM: 5,532 bytes. Stack headroom: 2,660 bytes.
+- Result is byte-identical to firmware/piezo-lc-usb-audio.hex:
+  SHA-256 2f7948c90fcf74ef5e64d2074034f31368d52f02b66be365de6943c95ccc63d8
+- All source and binary hashes match 2026-10-09-usb-audio-build.json.
+
+Host tests: 22 Python tests passed, with no third-party modules required.
+All local links in the main, Mac app, and USB audio guides resolve.
+This check did not restart the running app, flash the Teensy, or repeat physical
+capture tests. Earlier hardware results remain recorded separately.

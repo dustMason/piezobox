@@ -1,91 +1,60 @@
-# Piezo box
+# Piezo Box
 
-A restored Teensy LC piezo box that now appears directly as **USB audio inputs**.
-The hardware has one mono jack, three TRS jacks, seven piezo signals, and seven
-analog loading controls.
+Turn seven piezo pickups connected to a **Teensy LC** into USB audio and MIDI
+drum triggers. The firmware samples A1–A7 (pins 15–21) at **32 kHz** and exposes
+two standard USB audio inputs: **Piezo Box LC 7 Inputs** and **Piezo Box LC Mono**
+(the average of all seven). Both carry 16-bit PCM from the LC's 12-bit ADC.
 
-| macOS input | Channels | Format |
-|---|---:|---|
-| **Piezo Box LC 7 Inputs** | 7 separate inputs | 32 kHz, 16-bit PCM |
-| **Piezo Box LC Mono** | Mean of all seven inputs | 32 kHz, 16-bit PCM |
+The native Mac app, **Piezo Scope**, shows input levels and a selected waveform,
+plays the selected input, and generates drum MIDI with per-input thresholds,
+notes, and fixed or hit-strength velocity. USB audio works even with the app
+closed; MIDI requires the app to be running. No custom audio driver is needed.
 
-Both inputs work simultaneously, without Piezo Scope, Python, or a custom Mac
-audio driver. The samples come from the LC's 12-bit ADC. Firmware removes DC
-with an approximately 20 Hz high-pass filter; it cannot restore the negative
-waveform clipped by the existing trigger circuitry.
+## Build and run on a Mac
 
-Choose either input in recording software. Use a 32 kHz project/device rate or
-the application's supported sample-rate conversion. Other operating systems
-and individual DAWs have not all been qualified.
+Requires **macOS 14+** and **Xcode 16+ or Command Line Tools with Swift 6+**.
+Install Apple's developer tools with `xcode-select --install` if needed, then
+check `swift --version`. The app has no third-party package dependencies.
 
-## Piezo Scope
-
-The native Swift app reads all seven inputs through CoreAudio, displays their
-levels and a selected waveform, and can play the selected input locally.
-In **MIDI mode**, each input has an adjustable threshold, MIDI note, enable
-control, retrigger delay, and hit-strength sensitivity. Velocity can follow hit
-strength or use a fixed value. Other apps receive the virtual **Piezo Box Drums**
-MIDI source while Piezo Scope runs.
+From the repository root:
 
 ```sh
 ./macOS/build-app.sh
+open "build/Piezo Scope.app"
 ```
 
-Open `build/Piezo Scope.app`, allow macOS audio-input/microphone permission when
-requested, and press Start. See [the app guide](macOS/README.md). The app's
-listening controls do not change the USB audio other programs receive. Audio
-mode explains direct routing; no desktop audio-forwarding driver is involved.
+1. Connect the box using a USB **data** cable. It must be running the firmware below.
+2. Press **Start** and allow microphone access when macOS asks. Select an input
+   to view its waveform; enable **Listen** to hear it.
+3. For MIDI, select **MIDI** mode, set thresholds above the idle signal, and choose
+   **Piezo Box Drums** as your DAW's MIDI input (channel 10 by default).
+4. For audio recording, choose either **Piezo Box LC** input in your DAW. Use
+   32 kHz or the DAW's sample-rate conversion. Listening volume affects only monitoring.
 
-## Firmware
+Build on each Mac for its native architecture. The script locally signs the app;
+no Apple developer account is required. [More app details](macOS/README.md).
 
-The current source is [`piezo_lc_audio/`](piezo_lc_audio/), with USB core additions
-in [`usb_audio/`](usb_audio/). The build helper creates an isolated copy of the
-Teensy 1.62.0 core; it does not modify the installed core or upload automatically.
-See [USB Audio build, protocol, and verification details](docs/usb-audio.md).
+## Teensy firmware
 
-The deployed binary is [`firmware/piezo-lc-usb-audio.hex`](firmware/piezo-lc-usb-audio.hex),
-for **Teensy LC only**. [Its manifest](validation/2026-10-09-usb-audio-build.json)
-records build flags, memory use, and source/binary hashes. CPU remains 48 MHz.
-The serial interface is retained for diagnostics and USB-only programming.
+- **Ready to flash:** [`firmware/piezo-lc-usb-audio.hex`](firmware/piezo-lc-usb-audio.hex), for **Teensy LC only**.
+- **Source:** [`piezo_lc_audio/`](piezo_lc_audio/) and [`usb_audio/`](usb_audio/).
+- **Build and flash:** [firmware setup guide](docs/usb-audio.md), including pinned
+  Teensy 1.62.0 toolchain setup and USB-only updates. A plain Arduino sketch build
+  is insufficient: the helper applies the required USB core changes.
 
-The firmware uses pins 15–21 / A1–A7. Pin 21/A7 was traced to a cable tip, and
-pin 20/A6 to the dotted pot's signal connection. The complete physical
-jack/piezo map remains unverified; the app's drum names are editable defaults.
+The existing box clips negative piezo signals; firmware removes DC but cannot
+recover that lost audio. The complete physical jack-to-channel map is still
+unverified. Mono and seven-channel transport passed a simultaneous two-minute
+Mac test with zero sample/sequence errors; [details](docs/usb-audio.md#verification-evidence).
 
-## Validation
+## Development
 
 ```sh
-python3 -B -m unittest -v test_capture.py test_streaming.py test_usb_audio.py
 swift test --package-path macOS
+python3 -B -m unittest -v test_capture.py test_streaming.py test_usb_audio.py
 ```
 
-Physical CoreAudio recording succeeded for mono and all seven channels. In a
-120-second simultaneous transport test, each input checked 3,834,368 frames
-with zero sample/sequence errors and zero device ADC faults, late ticks,
-underruns, or overruns. The timeout-free release passed a further 30-second
-seven-channel pattern check. These are bounded transport tests, not proof of
-analog fidelity or indefinite reliability. See [the USB Audio guide](docs/usb-audio.md)
-and `validation/2026-10-09-usb-audio-*.json`.
-
-## Earlier serial experiment
-
-The former raw-ADC workflow is retained for reference and rollback:
-
-- `piezo_lc_capture/` and `firmware/piezo-lc-v2.hex`: continuous packed PZLC2
-  streaming over USB serial, verified at seven × 32 kHz.
-- `streaming.py`: raw PZLC2 receiver; `capture.py`: legacy recorder and offline
-  PZLC1/PZLC2-to-WAV decoder.
-- [PZLC2 protocol](docs/protocol-v2.md) and [serial throughput report](validation/2026-10-09-v2-throughput.txt).
-- Root `piezo_lc_capture.teensy-lc.hex`: intentionally preserved first prototype.
-- `README.txt` and `BUILD-VALIDATION.txt`: historical setup and validation.
-
-Those serial recording commands require the older firmware. The current USB
-Audio firmware supplies standard audio and a small diagnostic command set.
-
-## Hardware limits
-
-The traced inputs are ground-referenced trigger circuits with adjustable
-loading and diode clamping. Positive-voltage protection, midpoint bias,
-buffering, and anti-alias filtering have not been established. ADC clock speed
-and digital transport tests do not establish safe peak input voltage, channel
-isolation, or accurate settling through the high-impedance piezo/pot network.
+Python 3.9+ is needed only for firmware build tools and host tests. App code lives
+in `macOS/Sources/`. Older serial firmware, capture tools, and rollback binaries
+are retained; see the [legacy guide](docs/legacy-serial.txt) and
+[build history](validation/build-history.txt).

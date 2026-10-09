@@ -1,7 +1,8 @@
 PIEZO BOX — TEENSY LC USB-SERIAL WAVEFORM EXPERIMENT
 
 CURRENT FIRMWARE: The box now exposes mono and seven-channel USB Audio inputs.
-See README.md and docs/usb-audio.md. This file describes the older serial builds.
+See README.md and docs/usb-audio.md at the repository root.
+This file describes the older serial builds. Run commands from the repository root.
 
 V2 UPDATE — CONTINUOUS SEVEN-INPUT STREAMING
 
@@ -176,7 +177,7 @@ VALIDATION
 Host tests use synthetic data and do not require a board:
   python3 -m unittest -v test_capture.py
 
-See BUILD-VALIDATION.txt for the compiler, host test, and physical follow-up
+See validation/build-history.txt for the compiler, host test, and physical follow-up
 results. On 2026-10-09 this firmware was flashed to the LC and completed a
 five-second A7 capture at 16 kHz: 80,000 frames, zero drops, zero slow callbacks,
 and zero late intervals. Actual piezo audio quality, input-voltage protection,
